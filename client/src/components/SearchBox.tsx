@@ -1,7 +1,7 @@
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Search, Loader2 } from "lucide-react";
 
 interface SearchBoxProps {
@@ -23,8 +23,10 @@ export function SearchBox({ form, onSubmit, isLoading }: SearchBoxProps) {
                 <Input
                   placeholder="Describe your use case (e.g., 'I need a model for summarizing medical texts')"
                   {...field}
+                  value={field.value ?? ""}
                 />
               </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />

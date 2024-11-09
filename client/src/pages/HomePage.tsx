@@ -23,6 +23,9 @@ export function HomePage() {
 
   const form = useForm<SearchFormData>({
     resolver: zodResolver(searchSchema),
+    defaultValues: {
+      query: "",
+    },
   });
 
   const onSubmit = (data: SearchFormData) => {

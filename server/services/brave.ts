@@ -16,7 +16,7 @@ export async function searchSources(query: string): Promise<BraveSearchResult[]>
         'X-Subscription-Token': process.env.BRAVE_API_KEY
       },
       params: {
-        q: query,
+        q: query + " HuggingFace LLM Llama",
         count: 5,
         format: 'json'
       }

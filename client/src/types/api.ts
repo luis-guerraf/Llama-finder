@@ -6,6 +6,14 @@ export interface ModelInfo {
   instruct: boolean;
   details: string;
   featherlessAvailable: boolean;
+  // Performance metrics
+  downloads: number;
+  likes: number;
+  lastUpdated: string;
+  trainingMetrics?: {
+    loss?: number;
+    perplexity?: number;
+  };
 }
 
 export interface SearchResponse {

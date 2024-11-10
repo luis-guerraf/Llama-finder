@@ -21,6 +21,10 @@ import {
   Scale,
   BrainCircuit,
   Cloud,
+  Download,
+  ThumbsUp,
+  Clock,
+  BarChart,
 } from "lucide-react";
 
 interface ModelCardProps {
@@ -29,6 +33,15 @@ interface ModelCardProps {
 }
 
 export function ModelCard({ model, isLlama3 }: ModelCardProps) {
+  function formatNumber(num: number) {
+    return new Intl.NumberFormat().format(num);
+  }
+
+  function formatDate(dateString: string) {
+    if (!dateString) return "Unknown";
+    return new Date(dateString).toLocaleDateString();
+  }
+
   return (
     <Card className={`h-full ${isLlama3 ? "border-primary" : ""}`}>
       <CardHeader>
@@ -96,6 +109,39 @@ export function ModelCard({ model, isLlama3 }: ModelCardProps) {
             ) : (
               <X className="h-4 w-4 text-red-500" />
             )}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <Download className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Downloads:</span>
+            <span className="font-medium">{formatNumber(model.downloads)}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Likes:</span>
+            <span className="font-medium">{formatNumber(model.likes)}</span>
+          </div>
+
+          {(model.trainingMetrics?.loss || model.trainingMetrics?.perplexity) && (
+            <div className="flex items-center gap-2 text-sm">
+              <BarChart className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Performance:</span>
+              <div className="space-x-2">
+                {model.trainingMetrics.loss && (
+                  <span>Loss: {model.trainingMetrics.loss.toFixed(4)}</span>
+                )}
+                {model.trainingMetrics.perplexity && (
+                  <span>PPL: {model.trainingMetrics.perplexity.toFixed(2)}</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Updated:</span>
+            <span className="font-medium">{formatDate(model.lastUpdated)}</span>
           </div>
         </div>
       </CardContent>

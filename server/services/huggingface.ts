@@ -8,6 +8,15 @@ interface HuggingFaceModelResponse {
   private: boolean;
   downloads: number;
   likes: number;
+  lastModified: string;
+  cardData?: {
+    model_name?: string;
+    inference?: {
+      parameters?: number;
+    };
+    training_loss?: number;
+    perplexity?: number;
+  };
   [key: string]: any;
 }
 
@@ -27,6 +36,7 @@ export async function searchModels(
           sort: "downloads",
           direction: -1,
           limit: 20,
+          full: true,
         },
       },
     );
@@ -46,11 +56,18 @@ export async function searchModels(
       .map((model) => ({
         name: model.modelId,
         features: model.tags || [],
-        dataset: model.dataset || "Unknown",
-        size: formatModelSize(model.parameters),
+        dataset: model.cardData?.model_name || "Unknown",
+        size: formatModelSize(model.cardData?.inference?.parameters),
         instruct: model.tags?.includes("instruct") || false,
         details: model.description || "",
         featherlessAvailable: false, // Will be updated later
+        downloads: model.downloads || 0,
+        likes: model.likes || 0,
+        lastUpdated: model.lastModified || "",
+        trainingMetrics: {
+          loss: model.cardData?.training_loss,
+          perplexity: model.cardData?.perplexity,
+        },
       }));
   } catch (error) {
     if (axios.isAxiosError(error)) {

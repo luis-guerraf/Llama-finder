@@ -21,16 +21,16 @@ export function registerRoutes(app: Express) {
       const modelsWithAvailability = await Promise.all(
         models.map(async (model) => ({
           ...model,
-          featherlessAvailable: await checkAvailability(model.flavor),
-        }))
+          featherlessAvailable: await checkAvailability(model.name),
+        })),
       );
 
       // Separate Llama 3 models from alternatives
       const llama3Models = modelsWithAvailability.filter((m) =>
-        m.flavor.toLowerCase().includes("llama-3")
+        m.name.toLowerCase().includes("llama-3"),
       );
       const alternatives = modelsWithAvailability.filter(
-        (m) => !m.flavor.toLowerCase().includes("llama-3")
+        (m) => !m.name.toLowerCase().includes("llama-3"),
       );
 
       res.json({

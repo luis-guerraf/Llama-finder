@@ -35,8 +35,8 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
         </TableHeader>
         <TableBody>
           {models.map((model) => (
-            <TableRow key={model.flavor}>
-              <TableCell className="font-medium">{model.flavor}</TableCell>
+            <TableRow key={model.name}>
+              <TableCell className="font-medium">{model.name}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
                   {model.features.map((feature) => (

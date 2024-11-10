@@ -1,5 +1,10 @@
 import { ModelInfo } from "../types/api";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +34,7 @@ export function ModelCard({ model, isLlama3 }: ModelCardProps) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <h3 className="text-lg font-semibold line-clamp-2">{model.flavor}</h3>
+            <h3 className="text-lg font-semibold line-clamp-2">{model.name}</h3>
             {isLlama3 && (
               <Badge className="mt-1" variant="default">
                 Llama 3
@@ -100,7 +105,7 @@ export function ModelCard({ model, isLlama3 }: ModelCardProps) {
           variant="outline"
           className="w-full"
           onClick={() =>
-            window.open(`https://huggingface.co/${model.flavor}`, "_blank")
+            window.open(`https://huggingface.co/${model.name}`, "_blank")
           }
         >
           View on HuggingFace

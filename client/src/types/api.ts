@@ -1,5 +1,5 @@
 export interface ModelInfo {
-  flavor: string;
+  name: string;
   features: string[];
   dataset: string;
   size: string;

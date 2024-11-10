@@ -11,7 +11,9 @@ interface HuggingFaceModelResponse {
   [key: string]: any;
 }
 
-export async function searchModels(searchTerms: string[]): Promise<ModelInfo[]> {
+export async function searchModels(
+  searchTerms: string[],
+): Promise<ModelInfo[]> {
   try {
     const query = searchTerms.join(" OR ");
     const response = await axios.get<HuggingFaceModelResponse[]>(
@@ -26,18 +28,23 @@ export async function searchModels(searchTerms: string[]): Promise<ModelInfo[]> 
           direction: -1,
           limit: 20,
         },
-      }
+      },
     );
 
     if (!Array.isArray(response.data)) {
-      console.error("Invalid response format from HuggingFace API:", response.data);
+      console.error(
+        "Invalid response format from HuggingFace API:",
+        response.data,
+      );
       return [];
     }
 
     return response.data
-      .filter((model) => model.pipeline_tag === "text-generation" && !model.private)
+      .filter(
+        (model) => model.pipeline_tag === "text-generation" && !model.private,
+      )
       .map((model) => ({
-        flavor: model.modelId,
+        name: model.modelId,
         features: model.tags || [],
         dataset: model.dataset || "Unknown",
         size: formatModelSize(model.parameters),
@@ -61,7 +68,7 @@ export async function searchModels(searchTerms: string[]): Promise<ModelInfo[]> 
 
 function formatModelSize(parameters: number | undefined): string {
   if (!parameters) return "Unknown";
-  
+
   if (parameters >= 1e9) {
     return `${(parameters / 1e9).toFixed(1)}B`;
   } else if (parameters >= 1e6) {

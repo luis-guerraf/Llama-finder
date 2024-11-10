@@ -1,5 +1,5 @@
 import type { Express } from "express";
-import { generateSearchTerms } from "./services/together";
+import { generateSearchTerms, summarizeModelFeatures } from "./services/together";
 import { searchModels } from "./services/huggingface";
 import { checkAvailability } from "./services/featherless";
 
@@ -19,9 +19,24 @@ export function registerRoutes(app: Express) {
       const models = await searchModels(searchTerms);
       console.log("Number of returned models:", models.length);
 
+      // Enhance model descriptions with Together AI
+      const enhancedModels = await Promise.all(
+        models.map(async (model) => {
+          const { features, summary } = await summarizeModelFeatures(model.details);
+          return {
+            ...model,
+            features: features
+              .filter((f) => f.confidence > 0.6)
+              .map((f) => f.capability)
+              .join(", "),
+            details: summary || model.details,
+          };
+        }),
+      );
+
       // Check Featherless availability
       const modelsWithAvailability = await Promise.all(
-        models.map(async (model) => ({
+        enhancedModels.map(async (model) => ({
           ...model,
           featherlessAvailable: await checkAvailability(model.name),
         })),

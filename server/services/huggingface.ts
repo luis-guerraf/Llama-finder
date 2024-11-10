@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ModelInfo } from "../../client/src/types/api";
+import * as cheerio from "cheerio";
 
 interface HuggingFaceModelResponse {
   modelId: string;
@@ -18,6 +19,54 @@ interface HuggingFaceModelResponse {
     perplexity?: number;
   };
   [key: string]: any;
+}
+
+async function scrapeModelPage(modelId: string): Promise<{ description: string; features: string[] }> {
+  try {
+    const response = await axios.get(`https://huggingface.co/${modelId}`);
+    const $ = cheerio.load(response.data);
+    
+    // Get the main model description
+    const description = $('.model-description').text().trim() || 
+                       $('.markdown-content').text().trim();
+                       
+    // Extract features from model tags and description
+    const features = new Set<string>();
+    
+    // Add features from tags
+    $('.tag').each((_, elem) => {
+      features.add($(elem).text().trim());
+    });
+    
+    // Extract key capabilities from description
+    const capabilityKeywords = [
+      'instruction following',
+      'chat',
+      'code generation',
+      'multilingual',
+      'reasoning',
+      'math',
+      'creative writing',
+      'summarization'
+    ];
+    
+    capabilityKeywords.forEach(keyword => {
+      if (description.toLowerCase().includes(keyword.toLowerCase())) {
+        features.add(keyword);
+      }
+    });
+
+    return {
+      description: description || "No description available",
+      features: Array.from(features)
+    };
+  } catch (error) {
+    console.error(`Error scraping model page for ${modelId}:`, error);
+    return {
+      description: "",
+      features: []
+    };
+  }
 }
 
 export async function searchModels(
@@ -42,27 +91,30 @@ export async function searchModels(
         },
       );
 
-      const result = response.data
-        .filter(
-          (model) => model.pipeline_tag === "text-generation" && !model.private,
-        )
-        .map((model) => ({
-          name: model.modelId,
-          features: "",
-          dataset: model.cardData?.model_name || "Unknown",
-          size: formatModelSize(model.cardData?.inference?.parameters),
-          instruct: model.tags?.includes("instruct") || false,
-          details: model.description || "",
-          featherlessAvailable: false, // Will be updated later
-          downloads: model.downloads || 0,
-          likes: model.likes || 0,
-          lastUpdated: model.lastModified || "",
-          trainingMetrics: {
-            loss: model.cardData?.training_loss,
-            perplexity: model.cardData?.perplexity,
-          },
-        }));
-      resultArray = resultArray.concat(result);
+      const models = await Promise.all(
+        response.data
+          .filter((model) => model.pipeline_tag === "text-generation" && !model.private)
+          .map(async (model) => {
+            const { description, features } = await scrapeModelPage(model.modelId);
+            return {
+              name: model.modelId,
+              features: features.join(", "),
+              dataset: model.cardData?.model_name || "Unknown",
+              size: formatModelSize(model.cardData?.inference?.parameters),
+              instruct: model.tags?.includes("instruct") || false,
+              details: description || model.description || "",
+              featherlessAvailable: false, // Will be updated later
+              downloads: model.downloads || 0,
+              likes: model.likes || 0,
+              lastUpdated: model.lastModified || "",
+              trainingMetrics: {
+                loss: model.cardData?.training_loss,
+                perplexity: model.cardData?.perplexity,
+              },
+            };
+          }),
+      );
+      resultArray = resultArray.concat(models);
     }
     return resultArray;
   } catch (error) {

@@ -14,9 +14,7 @@ app.use(express.urlencoded({ extended: false }));
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
-    throw err;
   });
 
   // importantly only setup vite in development and after
@@ -28,17 +26,32 @@ app.use(express.urlencoded({ extended: false }));
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client
-  const PORT = 5000;
-  server.listen(PORT, "0.0.0.0", () => {
-    const formattedTime = new Date().toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
+  const PORT = process.env.PORT || 5000;
+  const HOST = process.env.HOST || "0.0.0.0";
 
-    console.log(`${formattedTime} [express] serving on port ${PORT}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`[${new Date().toLocaleTimeString()}] Server running at http://${HOST}:${PORT}`);
+  });
+
+  // Handle server errors
+  server.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.syscall !== 'listen') {
+      throw error;
+    }
+
+    const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
+
+    switch (error.code) {
+      case 'EACCES':
+        console.error(bind + ' requires elevated privileges');
+        process.exit(1);
+        break;
+      case 'EADDRINUSE':
+        console.error(bind + ' is already in use');
+        process.exit(1);
+        break;
+      default:
+        throw error;
+    }
   });
 })();

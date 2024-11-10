@@ -16,10 +16,19 @@ export interface ModelInfo {
   };
 }
 
+export interface SourceInfo {
+  title: string;
+  url: string;
+  description: string;
+  published_date?: string;
+  domain: string;
+}
+
 export interface SearchResponse {
   llama3Models: ModelInfo[];
   alternatives: ModelInfo[];
   searchTerms: string[];
+  sources: SourceInfo[];
 }
 
 export interface ApiError {

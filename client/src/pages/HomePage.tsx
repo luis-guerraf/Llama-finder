@@ -5,9 +5,11 @@ import { z } from "zod";
 import useSWR from "swr";
 import { SearchBox } from "../components/SearchBox";
 import { ComparisonTable } from "../components/ComparisonTable";
+import { SourcesList } from "../components/SourcesList";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const searchSchema = z.object({
   query: z.string().min(1, "Please enter a search query"),
@@ -62,6 +64,14 @@ export function HomePage() {
             <h2 className="text-2xl font-semibold mb-4">Alternative Models</h2>
             <ComparisonTable models={data.alternatives} />
           </section>
+
+          {data.sources && data.sources.length > 0 && (
+            <section>
+              <Separator className="my-8" />
+              <h2 className="text-xl font-semibold mb-4">Related Sources</h2>
+              <SourcesList sources={data.sources} />
+            </section>
+          )}
         </div>
       )}
     </div>

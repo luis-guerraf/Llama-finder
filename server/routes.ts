@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { generateSearchTerms, summarizeModel } from "./services/together";
 import { searchModels } from "./services/huggingface";
 import { checkAvailability } from "./services/featherless";
-import { searchSources } from "./services/brave";
 
 export function registerRoutes(app: Express) {
   app.get("/api/search", async (req, res) => {
@@ -19,10 +18,6 @@ export function registerRoutes(app: Express) {
       // Search for models using HuggingFace
       const models = await searchModels(searchTerms);
       console.log("Number of returned models:", models.length);
-
-      // Search for related sources using Brave Search
-      const sources = await searchSources(query);
-      console.log("Number of returned sources:", sources.length);
 
       // Process all models summaries
       await Promise.all(
@@ -52,7 +47,6 @@ export function registerRoutes(app: Express) {
         llama3Models,
         alternatives,
         searchTerms,
-        sources,
       });
     } catch (error) {
       console.error("Search error:", error);

@@ -1,7 +1,7 @@
 export interface ModelInfo {
   name: string;
   summary: string;
-  html: string;
+  readMe: string;
   dataset: string;
   size: string;
   instruct: boolean;

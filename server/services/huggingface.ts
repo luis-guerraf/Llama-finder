@@ -1,6 +1,5 @@
 import axios from "axios";
 import { ModelInfo } from "../../client/src/types/api";
-import * as cheerio from "cheerio";
 
 interface HuggingFaceModelResponse {
   modelId: string;
@@ -21,18 +20,19 @@ interface HuggingFaceModelResponse {
   [key: string]: any;
 }
 
-async function scrapeModelPage(modelId: string): Promise<{ html: string }> {
+async function scrapeModelPage(modelId: string): Promise<{ readMe: string }> {
   try {
-    const response = await axios.get(`https://huggingface.co/${modelId}`);
-    const $ = cheerio.load(response.data);
+    const response = await axios.get(
+      `https://huggingface.co/${modelId}blob/main/README.md?download=true`,
+    );
 
     return {
-      html: $.html() || "No description available",
+      readMe: response.data || "No description available",
     };
   } catch (error) {
     console.error(`Error scraping model page for ${modelId}:`, error);
     return {
-      html: "",
+      readMe: "",
     };
   }
 }
@@ -65,13 +65,19 @@ export async function searchModels(
               model.pipeline_tag === "text-generation" && !model.private,
           )
           .map(async (model) => {
-            const { html } = await scrapeModelPage(model.modelId);
+            const { readMe } = await scrapeModelPage(model.modelId);
             return {
               name: model.modelId,
-              html: html,
+              readMe: readMe,
               dataset: model.cardData?.model_name || "Unknown",
-              size: formatModelSize(model.cardData?.inference?.parameters, model.modelId.toLocaleLowerCase()),
-              instruct: model.tags?.includes("instruct") || model.modelId.toLowerCase().includes("instruct") || false,
+              size: formatModelSize(
+                model.cardData?.inference?.parameters,
+                model.modelId.toLocaleLowerCase(),
+              ),
+              instruct:
+                model.tags?.includes("instruct") ||
+                model.modelId.toLowerCase().includes("instruct") ||
+                false,
               featherlessAvailable: false, // Will be updated later
               downloads: model.downloads || 0,
               likes: model.likes || 0,
@@ -100,21 +106,23 @@ export async function searchModels(
   }
 }
 
-function formatModelSize(parameters: number | undefined, modelId: string): string {
+function formatModelSize(
+  parameters: number | undefined,
+  modelId: string,
+): string {
   if (!parameters) {
-    if(modelId.includes("3b")) return "3B";
-    if(modelId.includes("4b")) return "4B";
-    if(modelId.includes("7b")) return "7B";
-    if(modelId.includes("8b")) return "8B";
-    if(modelId.includes("9b")) return "9B";
-    if(modelId.includes("11b")) return "11B";
-    if(modelId.includes("13b")) return "13B";
-    if(modelId.includes("70b")) return "70B";
-    if(modelId.includes("405b")) return "405B";
-   
+    if (modelId.includes("3b")) return "3B";
+    if (modelId.includes("4b")) return "4B";
+    if (modelId.includes("7b")) return "7B";
+    if (modelId.includes("8b")) return "8B";
+    if (modelId.includes("9b")) return "9B";
+    if (modelId.includes("11b")) return "11B";
+    if (modelId.includes("13b")) return "13B";
+    if (modelId.includes("70b")) return "70B";
+    if (modelId.includes("405b")) return "405B";
+
     return "Unknown";
   }
-  
 
   if (parameters >= 1e9) {
     return `${(parameters / 1e9).toFixed(1)}B`;

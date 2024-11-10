@@ -1,11 +1,7 @@
 import type { Express } from "express";
-import {
-  generateSearchTerms,
-  summarizeModelFeatures,
-} from "./services/together";
+import { generateSearchTerms, summarizeModel } from "./services/together";
 import { searchModels } from "./services/huggingface";
 import { checkAvailability } from "./services/featherless";
-import { boolean } from "zod";
 
 export function registerRoutes(app: Express) {
   app.get("/api/search", async (req, res) => {
@@ -23,12 +19,12 @@ export function registerRoutes(app: Express) {
       const models = await searchModels(searchTerms);
       console.log("Number of returned models:", models.length);
 
-      // Process model summaries in parallel
+      // Process all models summaries
       await Promise.all(
         models.map(async (model) => {
-          const { summary } = await summarizeModelFeatures(model.html);
+          const { summary } = await summarizeModel(model.readMe, searchTerms[0]);
           model.summary = summary;
-        })
+        }),
       );
 
       // Check Featherless availability in parallel
@@ -36,15 +32,15 @@ export function registerRoutes(app: Express) {
         models.map(async (model) => {
           const featherlessAvailable = await checkAvailability(model.name);
           model.featherlessAvailable = featherlessAvailable;
-        })
+        }),
       );
 
       // Separate Llama 3 models from alternatives
       const llama3Models = models.filter((m) =>
-        m.name.toLowerCase().includes("llama-3")
+        m.name.toLowerCase().includes("llama-3"),
       );
       const alternatives = models.filter(
-        (m) => !m.name.toLowerCase().includes("llama-3")
+        (m) => !m.name.toLowerCase().includes("llama-3"),
       );
 
       res.json({

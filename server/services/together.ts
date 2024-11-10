@@ -9,14 +9,11 @@ const searchTermSchema = z.object({
 
 // Defining the schema for feature extraction
 const featureExtractionSchema = z.object({
-  summary: z.string().describe("A brief summary of the model's key features"),
+  summary: z.array(z.string()).describe("A brief summary of the model's key features"),
 });
 
 const searchJsonSchema = zodToJsonSchema(searchTermSchema, "searchTermSchema");
-const featureJsonSchema = zodToJsonSchema(
-  featureExtractionSchema,
-  "featureExtractionSchema",
-);
+const summaryJsonSchema = zodToJsonSchema(featureExtractionSchema,"featureExtractionSchema");
 
 export async function generateSearchTerms(query: string): Promise<string[]> {
   try {
@@ -40,29 +37,30 @@ export async function generateSearchTerms(query: string): Promise<string[]> {
     );
 
     const res = JSON.parse(response.data.choices[0].text);
-    return Array.isArray(res["keyword"]) ? res["keyword"] : [];
+    return res["keyword"];
   } catch (error) {
     console.error("Together AI error:", error);
     return [query];
   }
 }
 
-export async function summarizeModelFeatures(description: string): Promise<{
+export async function summarizeModel(readMe: string, application: string): Promise<{
   summary: string;
 }> {
   try {
-    const response = await axios.post(
+    // Call the Together AI API to summarize all descriptions
+        const response = await axios.post(
       "https://api.together.xyz/v1/completions",
       {
         model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        prompt: `Parse the following HTML page of an AI model description. Analyze how the described AI model compares to similar models. Output only a short one-sentence summary of this model's key features.
+        prompt: `Parse the following ReadMe.md page of a HuggingFace AI ${application} model description. Analyze the described model comparing it to other ${application} models. Output only a short one-sentence summary of your conclusion.
 
-HTML page: "${description}"`,
-        max_tokens: 1000,
+ReadMe.md: \n\n "${readMe}"`,
+        max_tokens: 500,
         temperature: 0.9,
         response_format: {
           type: "json_object",
-          schema: featureJsonSchema,
+          schema: summaryJsonSchema,
         },
       },
       {
@@ -72,11 +70,8 @@ HTML page: "${description}"`,
       },
     );
 
-    console.log("Summary:", response.data.choices[0].text);
-    const result = JSON.parse(response.data.choices[0].text);
-    return {
-      summary: result['summary'] || "No summary available",
-    };
+    const res = JSON.parse(response.data.choices[0].text);
+    return {summary: res["summary"]};
   } catch (error) {
     console.error("Together AI feature summarization error:", error);
     return {

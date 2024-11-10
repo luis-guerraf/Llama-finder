@@ -34,7 +34,7 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
             <TableHead>Dataset</TableHead>
             <TableHead>Params</TableHead>
             <TableHead>Instruct</TableHead>
-            <TableHead>Featherless</TableHead>
+            <TableHead>Featherless.ai</TableHead>
             <TableHead>Date</TableHead>
           </TableRow>
         </TableHeader>

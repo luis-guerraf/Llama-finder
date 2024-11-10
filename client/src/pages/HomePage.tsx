@@ -35,7 +35,7 @@ export function HomePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-        Llama 3 Model Finder
+        Llama 3 Finetune Finder
       </h1>
 
       <Card className="p-6 mb-8">

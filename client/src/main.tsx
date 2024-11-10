@@ -5,7 +5,6 @@ import "./index.css";
 import { SWRConfig } from "swr";
 import { fetcher } from "./lib/fetcher";
 import { HomePage } from "./pages/HomePage";
-import { Toaster } from "@/components/ui/toaster";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -14,7 +13,6 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/" component={HomePage} />
         <Route>404 Page Not Found</Route>
       </Switch>
-      <Toaster />
     </SWRConfig>
   </StrictMode>
 );

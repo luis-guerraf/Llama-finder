@@ -1,7 +1,11 @@
 import type { Express } from "express";
-import { generateSearchTerms, summarizeModelFeatures } from "./services/together";
+import {
+  generateSearchTerms,
+  summarizeModelFeatures,
+} from "./services/together";
 import { searchModels } from "./services/huggingface";
 import { checkAvailability } from "./services/featherless";
+import { boolean } from "zod";
 
 export function registerRoutes(app: Express) {
   app.get("/api/search", async (req, res) => {
@@ -19,34 +23,22 @@ export function registerRoutes(app: Express) {
       const models = await searchModels(searchTerms);
       console.log("Number of returned models:", models.length);
 
-      // Enhance model descriptions with Together AI
-      const enhancedModels = await Promise.all(
-        models.map(async (model) => {
-          const { features, summary } = await summarizeModelFeatures(model.details);
-          return {
-            ...model,
-            features: features
-              .filter((f) => f.confidence > 0.6)
-              .map((f) => f.capability)
-              .join(", "),
-            details: summary || model.details,
-          };
-        }),
-      );
+      models.map( async (model) => {
+        const { summary } = await summarizeModelFeatures(model.html);
+        model.summary = summary;
+      })
 
       // Check Featherless availability
-      const modelsWithAvailability = await Promise.all(
-        enhancedModels.map(async (model) => ({
-          ...model,
-          featherlessAvailable: await checkAvailability(model.name),
-        })),
-      );
+      models.map( async (model) => ({
+        const featherlessAvailable = await checkAvailability(model.name);
+        model.featherlessAvailable = featherlessAvailable;
+      }))
 
       // Separate Llama 3 models from alternatives
-      const llama3Models = modelsWithAvailability.filter((m) =>
+      const llama3Models = models.filter((m) =>
         m.name.toLowerCase().includes("llama-3"),
       );
-      const alternatives = modelsWithAvailability.filter(
+      const alternatives = models.filter(
         (m) => !m.name.toLowerCase().includes("llama-3"),
       );
 

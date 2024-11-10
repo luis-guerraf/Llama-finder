@@ -21,50 +21,18 @@ interface HuggingFaceModelResponse {
   [key: string]: any;
 }
 
-async function scrapeModelPage(modelId: string): Promise<{ description: string; features: string[] }> {
+async function scrapeModelPage(modelId: string): Promise<{ html: string }> {
   try {
     const response = await axios.get(`https://huggingface.co/${modelId}`);
     const $ = cheerio.load(response.data);
-    
-    // Get the main model description
-    const description = $('.model-description').text().trim() || 
-                       $('.markdown-content').text().trim();
-                       
-    // Extract features from model tags and description
-    const features = new Set<string>();
-    
-    // Add features from tags
-    $('.tag').each((_, elem) => {
-      features.add($(elem).text().trim());
-    });
-    
-    // Extract key capabilities from description
-    const capabilityKeywords = [
-      'instruction following',
-      'chat',
-      'code generation',
-      'multilingual',
-      'reasoning',
-      'math',
-      'creative writing',
-      'summarization'
-    ];
-    
-    capabilityKeywords.forEach(keyword => {
-      if (description.toLowerCase().includes(keyword.toLowerCase())) {
-        features.add(keyword);
-      }
-    });
 
     return {
-      description: description || "No description available",
-      features: Array.from(features)
+      html: $.html() || "No description available",
     };
   } catch (error) {
     console.error(`Error scraping model page for ${modelId}:`, error);
     return {
-      description: "",
-      features: []
+      html: "",
     };
   }
 }
@@ -73,7 +41,7 @@ export async function searchModels(
   searchTerms: string[],
 ): Promise<ModelInfo[]> {
   try {
-    var resultArray: ModelInfo[] = [];
+    var modelsArray: ModelInfo[] = [];
     for (var searchTerm of searchTerms) {
       const response = await axios.get<HuggingFaceModelResponse[]>(
         `https://huggingface.co/api/models?search=${encodeURIComponent(searchTerm)}`,
@@ -83,9 +51,8 @@ export async function searchModels(
           },
           params: {
             filter: "text-generation",
-            sort: "downloads",
             direction: -1,
-            limit: 3, // Changed from 20 to 3 as requested
+            limit: 3,
             full: true,
           },
         },
@@ -93,16 +60,18 @@ export async function searchModels(
 
       const models = await Promise.all(
         response.data
-          .filter((model) => model.pipeline_tag === "text-generation" && !model.private)
+          .filter(
+            (model) =>
+              model.pipeline_tag === "text-generation" && !model.private,
+          )
           .map(async (model) => {
-            const { description, features } = await scrapeModelPage(model.modelId);
+            const { html } = await scrapeModelPage(model.modelId);
             return {
               name: model.modelId,
-              features: features.join(", "),
+              html: html,
               dataset: model.cardData?.model_name || "Unknown",
               size: formatModelSize(model.cardData?.inference?.parameters),
               instruct: model.tags?.includes("instruct") || false,
-              details: description || model.description || "",
               featherlessAvailable: false, // Will be updated later
               downloads: model.downloads || 0,
               likes: model.likes || 0,
@@ -114,9 +83,9 @@ export async function searchModels(
             };
           }),
       );
-      resultArray = resultArray.concat(models);
+      modelsArray = modelsArray.concat(models);
     }
-    return resultArray;
+    return modelsArray;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("HuggingFace API error:", {

@@ -1,10 +1,10 @@
 export interface ModelInfo {
   name: string;
-  features: string;
+  summary: string;
+  html: string;
   dataset: string;
   size: string;
   instruct: boolean;
-  details: string;
   featherlessAvailable: boolean;
   // Performance metrics
   downloads: number;

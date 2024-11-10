@@ -9,15 +9,14 @@ const searchTermSchema = z.object({
 
 // Defining the schema for feature extraction
 const featureExtractionSchema = z.object({
-  features: z.array(z.object({
-    capability: z.string().describe("The specific capability or feature"),
-    confidence: z.number().min(0).max(1).describe("Confidence score for this feature"),
-  })).describe("List of model capabilities with confidence scores"),
   summary: z.string().describe("A brief summary of the model's key features"),
 });
 
 const searchJsonSchema = zodToJsonSchema(searchTermSchema, "searchTermSchema");
-const featureJsonSchema = zodToJsonSchema(featureExtractionSchema, "featureExtractionSchema");
+const featureJsonSchema = zodToJsonSchema(
+  featureExtractionSchema,
+  "featureExtractionSchema",
+);
 
 export async function generateSearchTerms(query: string): Promise<string[]> {
   try {
@@ -49,7 +48,6 @@ export async function generateSearchTerms(query: string): Promise<string[]> {
 }
 
 export async function summarizeModelFeatures(description: string): Promise<{
-  features: Array<{ capability: string; confidence: number }>;
   summary: string;
 }> {
   try {
@@ -57,13 +55,11 @@ export async function summarizeModelFeatures(description: string): Promise<{
       "https://api.together.xyz/v1/completions",
       {
         model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        prompt: `Analyze this AI model description and extract its key capabilities and features. For each feature, provide a confidence score (0-1) based on how clearly it's stated in the description. Also provide a brief summary.
+        prompt: `Analyze this AI model description and provide a summary of how it compares to similar models.
 
-Description: "${description}"
-
-Provide the response in JSON format with features array containing capability and confidence pairs, and a summary field.`,
+Description: "${description}"`,
         max_tokens: 500,
-        temperature: 0.3,
+        temperature: 0.9,
         response_format: {
           type: "json_object",
           schema: featureJsonSchema,
@@ -76,15 +72,14 @@ Provide the response in JSON format with features array containing capability an
       },
     );
 
+    console.log("Summary:", response.data.choices[0].text);
     const result = JSON.parse(response.data.choices[0].text);
     return {
-      features: result.features || [],
-      summary: result.summary || "No summary available",
+      summary: result['summary'] || "No summary available",
     };
   } catch (error) {
     console.error("Together AI feature summarization error:", error);
     return {
-      features: [],
       summary: "Failed to analyze features",
     };
   }

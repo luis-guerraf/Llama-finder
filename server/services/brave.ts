@@ -32,7 +32,7 @@ export async function searchSources(query: string): Promise<BraveSearchResult[]>
     return response.data.web.results.map((result: any) => ({
       title: result.title,
       url: result.url,
-      description: result.description,
+      description: result.description.slice(0, 50),
       published_date: result.published_date,
       domain: result.domain,
       domain_authority: {

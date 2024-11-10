@@ -3,42 +3,31 @@ import axios, { AxiosError } from "axios";
 interface FeatherlessModel {
   id: string;
   name: string;
-  available: boolean;
   [key: string]: any;
-}
-
-interface FeatherlessApiResponse {
-  models: FeatherlessModel[];
 }
 
 // Cache implementation
 let modelsCache: FeatherlessModel[] | null = null;
-let lastCacheUpdate: number = 0;
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache TTL
+refreshModelsCache();
 
 // Retry configuration
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000; // 1 second
 
-async function fetchModelsWithRetry(retryCount = 0): Promise<FeatherlessModel[]> {
+async function fetchModelsWithRetry(
+  retryCount = 0,
+): Promise<FeatherlessModel[]> {
   try {
-    const response = await axios.get<FeatherlessApiResponse>(
+    const response = await axios.get<FeatherlessModel[]>(
       "https://api.featherless.ai/v1/models",
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.BRAVE_API_KEY}`,
-        },
-      }
     );
 
-    // Access the models array from the response
-    const models = response.data.models;
-    if (!Array.isArray(models)) {
-      console.error("Unexpected response format:", response.data);
+    if (!Array.isArray(response.data["data"])) {
+      console.error("Unexpected response format:", response.data["data"][0]);
       return [];
     }
 
-    return models;
+    return response.data["data"];
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
@@ -69,7 +58,6 @@ async function fetchModelsWithRetry(retryCount = 0): Promise<FeatherlessModel[]>
 async function refreshModelsCache(): Promise<FeatherlessModel[]> {
   const models = await fetchModelsWithRetry();
   modelsCache = models;
-  lastCacheUpdate = Date.now();
   return models;
 }
 
@@ -79,30 +67,27 @@ function normalizeModelName(name: string): string {
 
 function findModelInList(
   modelName: string,
-  models: FeatherlessModel[]
+  models: FeatherlessModel[],
 ): FeatherlessModel | undefined {
   const normalizedSearchName = normalizeModelName(modelName);
   return models.find(
     (model) =>
       normalizeModelName(model.id).includes(normalizedSearchName) ||
-      normalizeModelName(model.name).includes(normalizedSearchName)
+      normalizeModelName(model.name).includes(normalizedSearchName),
   );
 }
 
 export async function checkAvailability(modelName: string): Promise<boolean> {
   try {
     // Check if cache needs refresh
-    if (
-      !modelsCache ||
-      Date.now() - lastCacheUpdate > CACHE_TTL
-    ) {
+    if (!modelsCache) {
       await refreshModelsCache();
     }
 
     // Use cached data
     const models = modelsCache || [];
     const model = findModelInList(modelName, models);
-    return model?.available || false;
+    return model !== undefined || false;
   } catch (error) {
     console.error("Error checking model availability:", {
       modelName,

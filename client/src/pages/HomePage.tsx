@@ -36,9 +36,20 @@ export function HomePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-        Llama 3 Finetune Finder
-      </h1>
+      <div 
+        className="relative mb-8 py-12 -mx-4 px-4"
+        style={{
+          backgroundImage: 'url("/Team_Llama.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50" /> {/* Overlay for better text visibility */}
+        <h1 className="relative text-4xl font-bold text-center bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent z-10">
+          Llama 3 Finetune Finder
+        </h1>
+      </div>
 
       <Card className="p-6 mb-8">
         <SearchBox form={form} onSubmit={onSubmit} isLoading={isLoading} />

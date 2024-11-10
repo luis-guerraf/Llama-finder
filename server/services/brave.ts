@@ -6,6 +6,11 @@ export interface BraveSearchResult {
   description: string;
   published_date?: string;
   domain: string;
+  domain_authority: {
+    age_days?: number;
+    backlinks?: number;
+    rank?: number;
+  };
 }
 
 export async function searchSources(query: string): Promise<BraveSearchResult[]> {
@@ -18,7 +23,9 @@ export async function searchSources(query: string): Promise<BraveSearchResult[]>
       params: {
         q: query + " HuggingFace LLM Llama",
         count: 5,
-        format: 'json'
+        format: 'json',
+        extra_snippets: true,
+        result_filter: 'web'
       }
     });
 
@@ -27,7 +34,12 @@ export async function searchSources(query: string): Promise<BraveSearchResult[]>
       url: result.url,
       description: result.description,
       published_date: result.published_date,
-      domain: result.domain
+      domain: result.domain,
+      domain_authority: {
+        age_days: result.age_days,
+        backlinks: result.backlinks,
+        rank: result.rank
+      }
     }));
   } catch (error) {
     console.error('Brave Search API error:', error);

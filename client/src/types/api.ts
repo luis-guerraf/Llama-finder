@@ -22,6 +22,11 @@ export interface SourceInfo {
   description: string;
   published_date?: string;
   domain: string;
+  domain_authority: {
+    age_days?: number;
+    backlinks?: number;
+    rank?: number;
+  };
 }
 
 export interface SearchResponse {

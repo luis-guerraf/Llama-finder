@@ -1,6 +1,12 @@
 import { SourceInfo } from "../types/api";
 import { Card } from "./ui/card";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Calendar, Globe, TrendingUp } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 interface SourcesListProps {
   sources: SourceInfo[];
@@ -24,12 +30,37 @@ export function SourcesList({ sources }: SourcesListProps) {
                 {source.title}
                 <ExternalLink className="h-3 w-3" />
               </a>
-              <p className="text-xs text-gray-500 mt-1">{source.domain}</p>
-              {source.published_date && (
-                <p className="text-xs text-gray-400">
-                  Published: {new Date(source.published_date).toLocaleDateString()}
-                </p>
-              )}
+              <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                <div className="flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  <span>{source.domain}</span>
+                </div>
+                {source.published_date && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{new Date(source.published_date).toLocaleDateString()}</span>
+                  </div>
+                )}
+                {source.domain_authority && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 cursor-help">
+                          <TrendingUp className="h-3 w-3" />
+                          <span>
+                            {source.domain_authority.rank ? `Rank: ${source.domain_authority.rank}` : ''}
+                            {source.domain_authority.backlinks ? ` • ${source.domain_authority.backlinks} backlinks` : ''}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Domain Authority Metrics</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">{source.description}</p>
             </div>
           </div>
         </Card>

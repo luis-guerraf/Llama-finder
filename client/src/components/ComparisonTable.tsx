@@ -44,11 +44,7 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
               <TableCell className="font-medium">{model.name}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
-                  {model.features.map((feature) => (
-                    <Badge key={feature} variant="secondary">
-                      {feature}
-                    </Badge>
-                  ))}
+                  {model.features}
                 </div>
               </TableCell>
               <TableCell>{model.dataset}</TableCell>

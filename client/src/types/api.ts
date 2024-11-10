@@ -1,6 +1,6 @@
 export interface ModelInfo {
   name: string;
-  features: string[];
+  features: string;
   dataset: string;
   size: string;
   instruct: boolean;

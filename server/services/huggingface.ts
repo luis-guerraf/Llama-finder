@@ -24,51 +24,47 @@ export async function searchModels(
   searchTerms: string[],
 ): Promise<ModelInfo[]> {
   try {
-    const query = searchTerms.join(" OR ");
-    const response = await axios.get<HuggingFaceModelResponse[]>(
-      `https://huggingface.co/api/models?search=${encodeURIComponent(query)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+    var resultArray: ModelInfo[] = [];
+    for (var searchTerm of searchTerms) {
+      const response = await axios.get<HuggingFaceModelResponse[]>(
+        `https://huggingface.co/api/models?search=${encodeURIComponent(searchTerm)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          },
+          params: {
+            filter: "text-generation",
+            sort: "downloads",
+            direction: -1,
+            limit: 20,
+            full: true,
+          },
         },
-        params: {
-          filter: "text-generation",
-          sort: "downloads",
-          direction: -1,
-          limit: 20,
-          full: true,
-        },
-      },
-    );
-
-    if (!Array.isArray(response.data)) {
-      console.error(
-        "Invalid response format from HuggingFace API:",
-        response.data,
       );
-      return [];
-    }
 
-    return response.data
-      .filter(
-        (model) => model.pipeline_tag === "text-generation" && !model.private,
-      )
-      .map((model) => ({
-        name: model.modelId,
-        features: model.tags || [],
-        dataset: model.cardData?.model_name || "Unknown",
-        size: formatModelSize(model.cardData?.inference?.parameters),
-        instruct: model.tags?.includes("instruct") || false,
-        details: model.description || "",
-        featherlessAvailable: false, // Will be updated later
-        downloads: model.downloads || 0,
-        likes: model.likes || 0,
-        lastUpdated: model.lastModified || "",
-        trainingMetrics: {
-          loss: model.cardData?.training_loss,
-          perplexity: model.cardData?.perplexity,
-        },
-      }));
+      const result = response.data
+        .filter(
+          (model) => model.pipeline_tag === "text-generation" && !model.private,
+        )
+        .map((model) => ({
+          name: model.modelId,
+          features: "",
+          dataset: model.cardData?.model_name || "Unknown",
+          size: formatModelSize(model.cardData?.inference?.parameters),
+          instruct: model.tags?.includes("instruct") || false,
+          details: model.description || "",
+          featherlessAvailable: false, // Will be updated later
+          downloads: model.downloads || 0,
+          likes: model.likes || 0,
+          lastUpdated: model.lastModified || "",
+          trainingMetrics: {
+            loss: model.cardData?.training_loss,
+            perplexity: model.cardData?.perplexity,
+          },
+        }));
+      resultArray = resultArray.concat(result);
+    }
+    return resultArray;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("HuggingFace API error:", {

@@ -13,9 +13,11 @@ export function registerRoutes(app: Express) {
 
       // Generate search terms using Together AI
       const searchTerms = await generateSearchTerms(query);
+      console.log("Returned search keywords:", searchTerms);
 
       // Search for models using HuggingFace
       const models = await searchModels(searchTerms);
+      console.log("Number of returned models:", models.length);
 
       // Check Featherless availability
       const modelsWithAvailability = await Promise.all(

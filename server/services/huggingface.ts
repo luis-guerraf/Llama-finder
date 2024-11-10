@@ -85,7 +85,7 @@ export async function searchModels(
             filter: "text-generation",
             sort: "downloads",
             direction: -1,
-            limit: 20,
+            limit: 3, // Changed from 20 to 3 as requested
             full: true,
           },
         },

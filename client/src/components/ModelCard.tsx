@@ -71,7 +71,7 @@ export function ModelCard({ model, isLlama3 }: ModelCardProps) {
 
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-1">
-          {model.features}
+          {model.summary}
         </div>
 
         <div className="space-y-2">

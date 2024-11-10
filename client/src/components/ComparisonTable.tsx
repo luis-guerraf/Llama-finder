@@ -30,9 +30,9 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead className="min-w-[150px]">Model</TableHead>
-            <TableHead>Features</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead>Dataset</TableHead>
-            <TableHead>Size</TableHead>
+            <TableHead>Params</TableHead>
             <TableHead>Instruct</TableHead>
             <TableHead>Featherless</TableHead>
             <TableHead>Date</TableHead>
@@ -44,7 +44,7 @@ export function ComparisonTable({ models }: ComparisonTableProps) {
               <TableCell className="font-medium">{model.name}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
-                  {model.features}
+                  {model.summary}
                 </div>
               </TableCell>
               <TableCell>{model.dataset}</TableCell>

@@ -70,8 +70,8 @@ export async function searchModels(
               name: model.modelId,
               html: html,
               dataset: model.cardData?.model_name || "Unknown",
-              size: formatModelSize(model.cardData?.inference?.parameters),
-              instruct: model.tags?.includes("instruct") || false,
+              size: formatModelSize(model.cardData?.inference?.parameters, model.modelId.toLocaleLowerCase()),
+              instruct: model.tags?.includes("instruct") || model.modelId.toLowerCase().includes("instruct") || false,
               featherlessAvailable: false, // Will be updated later
               downloads: model.downloads || 0,
               likes: model.likes || 0,
@@ -100,8 +100,21 @@ export async function searchModels(
   }
 }
 
-function formatModelSize(parameters: number | undefined): string {
-  if (!parameters) return "Unknown";
+function formatModelSize(parameters: number | undefined, modelId: string): string {
+  if (!parameters) {
+    if(modelId.includes("3b")) return "3B";
+    if(modelId.includes("4b")) return "4B";
+    if(modelId.includes("7b")) return "7B";
+    if(modelId.includes("8b")) return "8B";
+    if(modelId.includes("9b")) return "9B";
+    if(modelId.includes("11b")) return "11B";
+    if(modelId.includes("13b")) return "13B";
+    if(modelId.includes("70b")) return "70B";
+    if(modelId.includes("405b")) return "405B";
+   
+    return "Unknown";
+  }
+  
 
   if (parameters >= 1e9) {
     return `${(parameters / 1e9).toFixed(1)}B`;

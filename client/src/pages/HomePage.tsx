@@ -54,7 +54,7 @@ export function HomePage() {
       {data && (
         <div className="space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Llama 3 Models</h2>
+            <h2 className="text-2xl font-semibold mb-4">Llama 3 Based</h2>
             <ComparisonTable models={data.llama3Models} />
           </section>
 

@@ -55,10 +55,10 @@ export async function summarizeModelFeatures(description: string): Promise<{
       "https://api.together.xyz/v1/completions",
       {
         model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        prompt: `Analyze this AI model description and provide a summary of how it compares to similar models.
+        prompt: `Parse the following HTML page of an AI model description. Analyze how the described AI model compares to similar models. Output only a short one-sentence summary of this model's key features.
 
-Description: "${description}"`,
-        max_tokens: 500,
+HTML page: "${description}"`,
+        max_tokens: 1000,
         temperature: 0.9,
         response_format: {
           type: "json_object",

@@ -37,21 +37,32 @@ export function HomePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div 
-        className="relative mb-8 py-12 -mx-4 px-4"
+        className="relative mb-8 -mx-4"
         style={{
           backgroundImage: 'url("/Team_Llama.jpg")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          minHeight: '300px',
         }}
       >
-        <div className="absolute inset-0 bg-black/50" /> {/* Overlay for better text visibility */}
-        <h1 className="relative text-4xl font-bold text-center bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent z-10">
-          Llama 3 Finetune Finder
-        </h1>
+        <div 
+          className="absolute inset-0" 
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.5))',
+          }}
+        />
+        <div className="relative z-10 flex flex-col items-center justify-center h-full py-16 px-4 text-center">
+          <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-blue-100 to-white bg-clip-text text-transparent">
+            Llama 3 Finetune Finder
+          </h1>
+          <p className="text-lg text-gray-200 max-w-2xl mx-auto">
+            Discover and compare the best Llama 3 fine-tuned models for your specific use case
+          </p>
+        </div>
       </div>
 
-      <Card className="p-6 mb-8">
+      <Card className="p-6 mb-8 shadow-lg">
         <SearchBox form={form} onSubmit={onSubmit} isLoading={isLoading} />
       </Card>
 
